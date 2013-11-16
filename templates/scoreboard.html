@@ -1,0 +1,35 @@
+{% extends "layout.html" %}
+{% block body %}
+	{% if session.logged_in %}
+	    {% if entries %}
+	    	<div class="table-responsive">
+		        <table class="table">
+		          <thead>
+		            <tr>
+		              <th>Puntaje</th>
+		              <th>Nombre</th>
+		              <th>Rut</th>
+		              <th>Correo</th>
+		            </tr>
+		          </thead>
+		          <tbody>
+		      {% for entry in entries %}
+		            <tr>
+		              <td>{{ entry.score }}</td>
+		              <td>{{ entry.name }} {{ entry.lastname }} </td>
+		              <td>{{ entry.rut }}</td>
+		              <td>{{ entry.email|privatize }}</td>
+		            </tr>
+		      {% endfor %}
+		          </tbody>
+		        </table>
+		      </div>
+		{% else %}
+			<div class="alert alert-warning">
+	        	<p class="lead">No hay datos que usuarios que hayan jugado.</p>
+	        	<a href="/">Volver al inicio</a>
+	      	</div>
+		{% endif %}
+		<!-- layout ya entrega un mensaje de no autorizado -->
+	{% endif %}
+{% endblock %}

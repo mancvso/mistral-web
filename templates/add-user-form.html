@@ -1,0 +1,26 @@
+  <!-- Nuevo usuario -->
+  <h3>Agregar</h3>
+  {% if not entries %}
+  <form class="form-inline" role="form" method="post" action="/entries?ajax=0">
+  {% else %}
+  <form id="add-user-form" class="form-inline" role="form">
+  {% endif %}
+    <div class="form-group">
+      <label class="sr-only" for="name">Nombre</label>
+      <input type="text" class="form-control" id="name" placeholder="Nombre" name="name">
+    </div>
+    <div class="form-group">
+      <label class="sr-only" for="lastname">Apellidos</label>
+      <input type="text" class="form-control" id="lastname" placeholder="Apellidos" name="lastname">
+    </div>
+    <div class="form-group">
+      <label class="sr-only" for="email">e-mail</label>
+      <input type="email" class="form-control" id="email" placeholder="nombre@email.com" name="email">
+    </div>
+    <div class="form-group has-error">
+      <label class="sr-only" for="rut">Rut</label>
+      <input type="text" class="form-control" id="rut" placeholder="12.345.678-9" name="rut">
+    </div>
+    
+    <button type="submit" class="btn btn-default">Agregar</button>
+  </form>
