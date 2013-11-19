@@ -9,9 +9,10 @@
     :license: BSD, see LICENSE for more details.
 """
 
+import json
 from sqlite3 import dbapi2 as sqlite3
 from flask import Flask, request, session, g, redirect, url_for, abort, \
-     render_template, flash, jsonify
+     render_template, flash, jsonify, make_response
 
 
 # create our little application :)
@@ -62,58 +63,7 @@ def close_db(error):
 
 @app.route('/')
 def show_entries():
-    db = get_db()
-    cur = db.execute('select id, name, lastname, rut, email, score from entries where played = "false" order by id asc')
-    entries = cur.fetchall()
-    return render_template('show_entries.html', entries=entries, inlogin=False) #XXX: harcoded fix
-
-
-@app.route('/entries', methods=['GET'])
-def ajax_show_entry():
-    if not session.get('logged_in'):
-        abort(401)
-    db = get_db()
-    cursor = db.execute('select id, name, lastname, rut, email, score from entries where played = "false" order by id asc')
-    entries = cursor.fetchall()
-    #return jsonify(dict(('entry%d' % i, entry) for i, entry in enumerate(cursor.fetchall(), start=0)))
-    return render_template('table-entries.html', entries=entries)
-
-
-@app.route('/entries', methods=['POST'])
-def add_entry():
-    if not session.get('logged_in'):
-        abort(401)
-    ajax = request.args.get('ajax', '')
-    db = get_db()
-    db.execute('insert into entries (name, lastname, rut, email) values (?, ?, ?, ?)',
-                 [request.form['name'], request.form['lastname'], request.form['rut'], request.form['email']])
-    db.commit()
-    if(ajax != null):
-        return ajax_show_entry()
-    else:
-        return show_entries()
-
-
-
-@app.route('/entries/<int:entry_id>', methods=['DELETE'])
-def remove_entry(entry_id):
-    if not session.get('logged_in'):
-        abort(401)
-    db = get_db()
-    db.execute('delete from entries where id = ?',
-                 [entry_id])
-    db.commit()
-    return ajax_show_entry()
-
-@app.route('/entries/<int:entry_id>', methods=['PUT'])
-def update_entry(entry_id):
-    if not session.get('logged_in'):
-        abort(401)
-    db = get_db()
-    db.execute('update entries set played=?, score=?, rewarded=? where id = ?',
-                 [request.form['played'], request.form['score'], request.form['rewarded'], entry_id])
-    db.commit()
-    return ajax_show_entry()
+    return render_template('show_entries.html')
 
 
 @app.route('/login', methods=['GET', 'POST'])
@@ -126,7 +76,7 @@ def login():
             error = 'Invalid password'
         else:
             session['logged_in'] = True
-            flash('Has iniciado sesión')
+            flash('Has iniciado')
             return redirect(url_for('show_entries'))
     return render_template('login.html', error=error, inlogin=True)
 
@@ -134,21 +84,125 @@ def login():
 @app.route('/logout')
 def logout():
     session.pop('logged_in', None)
-    flash('Has cerrado sesión')
+    flash('Has cerrado sesion')
     return redirect(url_for('show_entries'))
 
 @app.route('/puntajes')
 def scoreboard():
     db = get_db()
-    cur = db.execute('select id, name, lastname, rut, email, score from entries where played is True order by score desc')
+    cur = db.execute('select id, name, lastname, rut, email, score from entries order by score desc')
     entries = cur.fetchall()
-    return render_template('scoreboard.html', entries=entries)
+    return render_template('scoreboard.html')
 
 @app.template_filter('privatize')
 def privatize_filter(s):
     return "*****@" + s.split("@")[1]
 
+# ====================
+#    API Endpoints 
+# ====================
+
+
+"""
+    Entregar lista de 10 usuarios con los más altos puntajes
+"""
+@app.route('/usuarios/top', methods=['GET'])
+def api_users_top():
+    db = get_db()
+    cur = db.execute('select id, name, lastname, score, rut, email from entries where score > 0 order by score desc limit 10')
+    entries = cur.fetchall()
+    return multi_output(request, entries, "user.xml")
+    
+
+"""
+    Entregar siguiente usuario en la lista de espera
+"""
+@app.route('/usuarios/next')
+def api_users_next():
+    db = get_db()
+    cur = db.execute('select id, name, lastname, rut, email, score from entries where score = 0 order by id asc limit 1')
+    entry = cur.fetchall()
+    return multi_output(request, entry, "user.xml")
+
+"""
+    Actualizar o entregar información del usuario pedido
+"""
+@app.route('/usuarios/<int:id>', methods=['GET', 'PUT'])
+def api_users_update(id):
+    db = get_db()
+    if request.method == 'PUT':
+        
+        db.execute('update entries set score=?, photo=? where id = ?',
+            [request.form['score'], request.form['photo'], id])
+        db.commit()
+        cur = db.execute('select * from entries where id = ?', [id])
+
+        return multi_output(request, cur.fetchall(), "user.xml")
+
+    else : #GET
+        
+        cursor = db.execute('select id, name, lastname, rut, email, score from entries where id = ?', [id])
+        entry = cursor.fetchall()
+        return multi_output(request, entry, "user.xml")
+
+"""
+    Entregar todos los usuarios, hasta limit
+"""
+@app.route('/usuarios')
+def api_users():
+    db = get_db()
+    if request.args['unscored'] == "true":
+        sql ='select id, name, lastname, rut, email from entries where score = 0 order by score desc'
+    else :
+        sql ='select id, name, lastname, score, rut, email from entries order by score desc'
+
+    cur = db.execute( sql )
+    entries = cur.fetchall()
+    return multi_output(request, entries, "users.xml")
+
+@app.route('/usuarios', methods=['POST'])
+def api_user_add():
+    #if not session.get('logged_in'):
+    #    abort(401)
+    db = get_db()
+    db.execute('insert into entries (name, lastname, rut, email) values (?, ?, ?, ?)',
+                 [request.form['name'], request.form['lastname'], request.form['rut'], request.form['email']])
+    db.commit()
+    return multi_output(request, [], "users.xml")
+
+@app.route('/usuarios/<int:id>', methods=['DELETE'])
+def remove_entry(id):
+    #if not session.get('logged_in'):
+    #    abort(401)
+    db = get_db()
+    db.execute('delete from entries where id = ?', [id])
+    db.commit()
+    return multi_output(request, [], "users.xml")
+
+
+def multi_output(request, data, xml_template):
+    # JSON Response
+    if request.args['json'] == "true":
+        # None
+        if data is None or len(data) == 0:
+            resp = jsonify({'status': "EMPTY", 'data': []})
+        # One
+        #elif data != None:
+        #    resp = jsonify({'status': "OK", 'data': data})
+        # Multiple
+        else:
+            json_rep = json.loads( json.dumps( [dict(ix) for ix in data], sort_keys = False, indent = 4, separators=(',', ': ')) )
+            resp = jsonify({'status': "OK", 'data': json_rep})
+    # XML Response
+    else:
+        resp = make_response(render_template(xml_template, data=data), 200)
+        
+    if not request.args['json'] == "true":
+        resp.headers['Content-Type'] = 'text/xml'
+
+    return resp
 
 if __name__ == '__main__':
     init_db()
-    app.run()
+
+    app.run(host='192.168.2.190')

@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<data>
+	<status>{% if data %}OK{% else %}EMPTY{% endif %}</status>
+	<usuarios>
+		{% for user in data %}
+		<usuario>
+			<id>{{ user.id }}</id>
+			<nombre>{{ user.name }}</nombre>
+			<nombrecompleto>{{ user.name }} {{ user.lastname }}</nombrecompleto>
+			<puntaje>{{ user.score }}</puntaje>
+			<fotos>
+				{% for photo in user.photos %}
+					<foto>{{ photo }}</foto>
+				{% else %}
+					<foto>default.jpg</foto>
+				{% endfor %}
+			</fotos>
+		</usuario>	
+		{% endfor %}
+	</usuarios>
+</data>

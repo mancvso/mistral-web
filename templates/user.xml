@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<data>
+	<status>{% if data %}OK{% else %}EMPTY{% endif %}</status>
+	<usuario>
+		{% if data[0] %}
+		<id>{{ data[0].id }}</id>
+		<nombre>{{ data[0].name }}</nombre>
+		<nombrecompleto>{{ data[0].name }} {{ data[0].lastname }}</nombrecompleto>
+		<puntaje>{{ data[0].score }}</puntaje>
+		<rut>{{ data[0].rut }}</rut>
+		<email>{{ data[0].email }}</email>
+		{% endif %}
+	</usuario>
+</data>

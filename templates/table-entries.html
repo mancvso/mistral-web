@@ -1,23 +1,33 @@
-<div class="table-responsive" id="table-entries">
+<div class="table-responsive" id="table-entries" data-bind="visible: hasnext">
+  <hr>
+  <h3>
+    <div class="row">
+      <div class="col-lg-8">
+        En espera
+      </div>
+
+      <div class="input-group col-lg-4">
+        <span class="input-group-addon"><i class="glyphicon glyphicon-filter"></i></span>
+        <input type="text" class="form-control input-sm" placeholder="Búsqueda rápida">
+      </div>
+    </div>
+  </h3>
+
   <table class="table table-hover">
     <thead>
       <tr>
         <th>Nombre</th>
         <th>Rut</th>
         <th>Correo</th>
-        <th>Espera</th>
         <th>&nbsp;</th>
       </tr>
     </thead>
-    <tbody>
-{% for entry in entries %}
-      <tr id="entry-{{ entry.id }}">
-        <td>{{ entry.name }} {{ entry.lastname }}</td>
-        <td>{{ entry.rut }}</td>
-        <td>{{ entry.email|privatize }}</td>
-        <td>{{ entry.elapsed }}</td>
-        <td><button class="btn btn-small" data-id="{{ entry.id }}" onclick="javascript:removeuser({{ entry.id }});">Borrar</button>
+    <tbody data-bind="foreach: waiting">
+      <tr id="">
+        <td><span data-bind="text: name"></span> <span data-bind="text: lastname"></span></td>
+        <td data-bind="text:rut"></td>
+        <td data-bind="text:email"></td>
+        <td data-bind="click:$parent.removeUser">Borrar</td>
       </tr>
-{% endfor %}
     </tbody>
   </table>

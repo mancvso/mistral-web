@@ -1,53 +1,54 @@
 {% extends "layout.html" %}
 {% block body %}
   {% if session.logged_in %}
-    {% if entries %}
       <!-- Estado -->
-      <div class="well">
+      <div class="well" _data-bind="visible: hasnext()">
         
-        <h2>Jugador Actual <small class="label label-warning">En espera</small> </h2>
+        <h2>Jugador Actual </h2>
         
         <!-- Datos jugador -->
         <div class="row">
-          <div class="col-xs-6"><dl><dt>Nombre</dt><dd>{{entries[0].name}} {{entries[0].lastname}} <code>#{{entries[0].id}}</code></dd><dt>Rut</dt><dd>{{entries[0].rut}}</dd></dl></div>
-          <div class="col-xs-6"><dl><dt>Puntaje</dt><dd>{{entries[0].score}}</dd><dt>Tiempo</dt><dd>{{entries[0].elapsed}}</dd></dl></div>
+          <div class="col-xs-6">
+            <dl>
+              <dt>Nombre</dt>
+              <dd>
+                <span data-bind="text: current.fullname"></span>&nbsp;
+                <code>#<span data-bind="text: current.id"></span></code>
+              </dd>
+              <dt>Rut</dt>
+              <dd><span data-bind="text: current.rut"></span></dd>
+            </dl>
+          </div>
+          <div class="col-xs-6">
+            <dl>
+              <dt>Puntaje</dt>
+              <dd data-bind="text: current.score"></dd>
+              </dl>
+            </div>
         </div>
-        {% if entries[1] %}
-        <small class="text-muted">Siguiente jugador: {{entries[1].name}} {{entries[1].lastname}}</small> <br>
-        {% else %}
-        <small class="text-muted">No hay más jugadores en espera</small> <br>
-        {% endif %}
+        <div>
+          <small class="text-muted" data-bind="if: hasnext">Siguiente jugador: <span data-bind="next.name"></span></small> <br>
+          <small class="text-muted" data-bind="ifnot: hasnext">No hay más jugadores en espera</small> <br>
+        </div>
 
-        <a class="btn btn-large btn-success" id="start-play-trigger" data-id="{{entries[0].id}}"href="#">Comenzar</a> <a class="btn btn-info btn-large" href="#">Siguiente jugador</a> &nbsp; <a class="pull-right btn btn-danger" href="#">Detener</a>
+        <a class="btn btn-large btn-success" id="start-play-trigger" data-id="" href="#">Comenzar</a>
+        <a class="btn btn-info btn-large" href="#">Siguiente jugador</a> &nbsp; <!-- FIXME -->
+        <a class="pull-right btn btn-danger" href="#">Detener</a>
       </div>
       
+      <!-- Agregar usuario -->
       {% include "add-user-form.html" %}
 
       <!-- Usuarios en cola -->
-      <hr>
-      <h3><div class="row">
-        <div class="col-lg-8">
-          En espera
-        </div>
-
-        <div class="input-group col-lg-4">
-          <span class="input-group-addon"><i class="glyphicon glyphicon-filter"></i></span>
-          <input type="text" class="form-control input-sm" placeholder="Búsqueda rápida">
-        </div>
-      </div></h3>
-
       {% include "table-entries.html" %}
+
       </div>
-    {% else %}
-      <!-- tutorial -->
-      <div class="jumbotron">
-        <h1>Comenzar</h1>
-        <p class="lead">Antes de comenzar, hay un par de cosas que tal vez necesites saber.</p>
-      </div>
-      {% include "add-user-form.html" %}
-      {% include "table-entries.html" %}
-    {% endif %}
-    
+
+  {% else %}
+
+    Not loged in
 
   {% endif %}
+    
+
 {% endblock %}
