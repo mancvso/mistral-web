@@ -1,4 +1,4 @@
-# -*- coding: utf-8 -*-
+﻿# -*- coding: utf-8 -*-
 """
     Mistral Dance
     ~~~~~~
@@ -9,6 +9,7 @@
     :license: BSD, see LICENSE for more details.
 """
 
+import sys
 import json
 from sqlite3 import dbapi2 as sqlite3
 from flask import Flask, request, session, g, redirect, url_for, abort, \
@@ -23,8 +24,8 @@ app.config.update(dict(
     DATABASE='mistral-dance.db',
     DEBUG=True,
     SECRET_KEY='3566cbfdabc691faa046bc142e9c080a53b852c4',
-    USERNAME='admin',
-    PASSWORD='default' #7505d64a54e061b7acd54ccd58b49dc43500b635
+    USERNAME='datactil',
+    PASSWORD='datactil' #7505d64a54e061b7acd54ccd58b49dc43500b635
 ))
 app.config.from_envvar('FLASKR_SETTINGS', silent=True)
 
@@ -71,12 +72,12 @@ def login():
     error = None
     if request.method == 'POST':
         if request.form['username'] != app.config['USERNAME']:
-            error = 'Invalid username'
+            error = 'Credenciales no válidas.'
         elif request.form['password'] != app.config['PASSWORD']:
-            error = 'Invalid password'
+            error = 'Credenciales no válidas.'
         else:
             session['logged_in'] = True
-            flash('Has iniciado')
+            flash('Has iniciado sesión')
             return redirect(url_for('show_entries'))
     return render_template('login.html', error=error, inlogin=True)
 
@@ -84,15 +85,15 @@ def login():
 @app.route('/logout')
 def logout():
     session.pop('logged_in', None)
-    flash('Has cerrado sesion')
+    flash('Has cerrado sesión')
     return redirect(url_for('show_entries'))
 
 @app.route('/puntajes')
 def scoreboard():
     db = get_db()
-    cur = db.execute('select id, name, lastname, rut, email, score from entries order by score desc')
+    cur = db.execute('select id, name, lastname, rut, email, score from entries where played = 1 order by score desc')
     entries = cur.fetchall()
-    return render_template('scoreboard.html')
+    return render_template('scoreboard.html', data=entries)
 
 @app.template_filter('privatize')
 def privatize_filter(s):
@@ -109,7 +110,7 @@ def privatize_filter(s):
 @app.route('/usuarios/top', methods=['GET'])
 def api_users_top():
     db = get_db()
-    cur = db.execute('select id, name, lastname, score, rut, email from entries where score > 0 order by score desc limit 10')
+    cur = db.execute('select id, name, lastname, score, photo, rut, email from entries where played = 1 order by score desc limit 10')
     entries = cur.fetchall()
     return multi_output(request, entries, "user.xml")
     
@@ -120,7 +121,7 @@ def api_users_top():
 @app.route('/usuarios/next')
 def api_users_next():
     db = get_db()
-    cur = db.execute('select id, name, lastname, rut, email, score from entries where score = 0 order by id asc limit 1')
+    cur = db.execute('select id, name, lastname, rut, email, score, played from entries where played = 0 order by id asc limit 1')
     entry = cur.fetchall()
     return multi_output(request, entry, "user.xml")
 
@@ -131,9 +132,13 @@ def api_users_next():
 def api_users_update(id):
     db = get_db()
     if request.method == 'PUT':
+        if request.form.has_key('photo'):
+            db.execute('update entries set score=?, photo=?, played=? where id = ?',
+                [request.form['score'], request.form['photo'], request.form['played'], id])
+        else :
+            db.execute('update entries set score=?, played=? where id = ?',
+                [request.form['score'], request.form['played'], id])
         
-        db.execute('update entries set score=?, photo=? where id = ?',
-            [request.form['score'], request.form['photo'], id])
         db.commit()
         cur = db.execute('select * from entries where id = ?', [id])
 
@@ -151,10 +156,10 @@ def api_users_update(id):
 @app.route('/usuarios')
 def api_users():
     db = get_db()
-    if request.args['unscored'] == "true":
-        sql ='select id, name, lastname, rut, email from entries where score = 0 order by score desc'
+    if request.args.has_key('scope'):
+        sql ='select id, name, lastname, rut, email, score, played from entries where played = 0 order by score desc'
     else :
-        sql ='select id, name, lastname, score, rut, email from entries order by score desc'
+        sql ='select id, name, lastname, rut, email, score, played from entries order by score desc'
 
     cur = db.execute( sql )
     entries = cur.fetchall()
@@ -175,9 +180,11 @@ def remove_entry(id):
     #if not session.get('logged_in'):
     #    abort(401)
     db = get_db()
+    cursor = db.execute('select id, name, lastname, rut, email, score from entries where id = ?', [id])
+    entry = cursor.fetchall()
     db.execute('delete from entries where id = ?', [id])
     db.commit()
-    return multi_output(request, [], "users.xml")
+    return multi_output(request, entry, "user.xml")
 
 
 def multi_output(request, data, xml_template):
@@ -203,6 +210,8 @@ def multi_output(request, data, xml_template):
     return resp
 
 if __name__ == '__main__':
+    reload(sys)
+    sys.setdefaultencoding('utf-8')
     init_db()
 
-    app.run(host='192.168.2.190')
+    app.run(host='0.0.0.0')

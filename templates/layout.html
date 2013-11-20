@@ -26,20 +26,17 @@
   <body>
 
     <div class="container-narrow">
-
+    
       <div class="masthead">
+        {% if session.logged_in %}
         <ul class="nav nav-pills pull-right">
-          <li class="active"><a href="/">Home</a></li>
+          <li><a href="/">Lista de espera</a></li>
           <li><a href="/puntajes">Puntajes</a></li>
-          <li><a href="/sorteo">Sorteo</a></li>
           <li class="pull-right">
-            {% if not session.logged_in %}
-              <a href="{{ url_for('login') }}">Entrar</a>
-            {% else %}
-              <a href="{{ url_for('logout') }}">Salir</a>
-            {% endif %}
+            <a href="{{ url_for('logout') }}">Salir</a>
           </li>
         </ul>
+        {% endif %}
         <h3 class="muted">Mistral Dance</h3>
       </div>
 
@@ -48,11 +45,8 @@
         {% for message in get_flashed_messages() %}
           <div class="alert alert-success">
             <button type="button" class="close" data-dismiss="alert">×</button>
-            {{ _message }}
+            {{ message }}
             <!-- tutorial en cada inicio de sesión -->
-            {%if session.logged_in %}
-              <br><a href="/tutorial">Ver tutorial</a>
-            {% endif %}
           </div>
         {% endfor %}
 
@@ -69,16 +63,7 @@
 
       {% block body %}{% endblock %}
 
-
-      <hr>
-
     </div> <!-- /container -->
-
-    <div id="footer">
-      <div class="container">
-        <p class="text-muted credit">Example courtesy <a href="http://martinbean.co.uk">Martin Bean</a> and <a href="http://ryanfait.com/sticky-footer/">Ryan Fait</a>.</p>
-      </div>
-    </div>
 
 
     <!-- Bootstrap core JavaScript

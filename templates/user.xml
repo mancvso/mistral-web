@@ -9,6 +9,8 @@
 		<puntaje>{{ data[0].score }}</puntaje>
 		<rut>{{ data[0].rut }}</rut>
 		<email>{{ data[0].email }}</email>
+		<foto>{{ data[0].photo }}</foto>
+		<played>{{ data[0].played }}</played>
 		{% endif %}
 	</usuario>
 </data>

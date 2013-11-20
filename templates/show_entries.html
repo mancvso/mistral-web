@@ -2,9 +2,9 @@
 {% block body %}
   {% if session.logged_in %}
       <!-- Estado -->
-      <div class="well" _data-bind="visible: hasnext()">
+      <div class="well" data-bind="visible: isempty() == false">
         
-        <h2>Jugador Actual </h2>
+        <h2>Jugador Actual</h2>
         
         <!-- Datos jugador -->
         <div class="row">
@@ -27,13 +27,10 @@
             </div>
         </div>
         <div>
-          <small class="text-muted" data-bind="if: hasnext">Siguiente jugador: <span data-bind="next.name"></span></small> <br>
-          <small class="text-muted" data-bind="ifnot: hasnext">No hay más jugadores en espera</small> <br>
+          <small class="text-muted" data-bind="if: hasnext() == true">Siguiente jugador: <span data-bind="text: next.fullname"></span></small> <br>
+          <small class="text-muted text-warning" data-bind="if: hasnext() == false">No hay más jugadores en espera</small> <br>
         </div>
 
-        <a class="btn btn-large btn-success" id="start-play-trigger" data-id="" href="#">Comenzar</a>
-        <a class="btn btn-info btn-large" href="#">Siguiente jugador</a> &nbsp; <!-- FIXME -->
-        <a class="pull-right btn btn-danger" href="#">Detener</a>
       </div>
       
       <!-- Agregar usuario -->
@@ -43,10 +40,6 @@
       {% include "table-entries.html" %}
 
       </div>
-
-  {% else %}
-
-    Not loged in
 
   {% endif %}
     

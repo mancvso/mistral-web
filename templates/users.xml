@@ -6,15 +6,11 @@
 		<usuario>
 			<id>{{ user.id }}</id>
 			<nombre>{{ user.name }}</nombre>
+			<apellido>{{ user.lastname }}</apellido>
 			<nombrecompleto>{{ user.name }} {{ user.lastname }}</nombrecompleto>
 			<puntaje>{{ user.score }}</puntaje>
-			<fotos>
-				{% for photo in user.photos %}
-					<foto>{{ photo }}</foto>
-				{% else %}
-					<foto>default.jpg</foto>
-				{% endfor %}
-			</fotos>
+			<foto>{{ user.photo }}</foto>
+			<played>{{ user.played }}</played>
 		</usuario>	
 		{% endfor %}
 	</usuarios>

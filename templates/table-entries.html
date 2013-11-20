@@ -1,14 +1,9 @@
-<div class="table-responsive" id="table-entries" data-bind="visible: hasnext">
+<div class="table-responsive" id="table-entries" data-bind="visible: isempty() == false">
   <hr>
   <h3>
     <div class="row">
       <div class="col-lg-8">
         En espera
-      </div>
-
-      <div class="input-group col-lg-4">
-        <span class="input-group-addon"><i class="glyphicon glyphicon-filter"></i></span>
-        <input type="text" class="form-control input-sm" placeholder="Búsqueda rápida">
       </div>
     </div>
   </h3>

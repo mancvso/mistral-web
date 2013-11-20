@@ -1,11 +1,12 @@
 {% extends "layout.html" %}
 {% block body %}
 	{% if session.logged_in %}
-	    {% if entries %}
+	    {% if data %}
 	    	<div class="table-responsive">
 		        <table class="table">
 		          <thead>
 		            <tr>
+		              <th>Posición</th>
 		              <th>Puntaje</th>
 		              <th>Nombre</th>
 		              <th>Rut</th>
@@ -13,12 +14,13 @@
 		            </tr>
 		          </thead>
 		          <tbody>
-		      {% for entry in entries %}
+		      {% for entry in data %}
 		            <tr>
+		              <td>{{ loop.revindex }}</td>
 		              <td>{{ entry.score }}</td>
 		              <td>{{ entry.name }} {{ entry.lastname }} </td>
 		              <td>{{ entry.rut }}</td>
-		              <td>{{ entry.email|privatize }}</td>
+		              <td>{{ entry.email }}</td>
 		            </tr>
 		      {% endfor %}
 		          </tbody>

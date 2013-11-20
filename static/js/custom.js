@@ -17,20 +17,6 @@ $(function () {
 
 	});
 
-	$("#start-play-trigger").click(function() {
-		var score = Number(prompt("Puntaje", "100"));
-		var id = $(this).data("id");
-		
-		$.ajax({
-			url: "/entries/" + id,
-			data: { 'score':score, 'played':1, 'rewarded': 0},
-			method: "PUT"
-		}).done(function(data) {
-			$( "#table-entries" ).html(data);
-		});
-
-	});
-
 	/* Knockout bindings */
 	var users = {
 		waiting: ko.observableArray(),
@@ -43,7 +29,8 @@ $(function () {
 		},
 		next: {
 			id: ko.observable(),
-		    name: ko.observable()
+		    name: ko.observable(),
+		    lastname: ko.observable()
 		}
 	}
 
@@ -51,11 +38,23 @@ $(function () {
     	return users.current.name() + " " + users.current.lastname();
 	});
 
+	users.next.fullname = ko.computed( function(){
+    	return users.next.name() + " " + users.next.lastname();
+	});
+
 	users.hasnext = function(){
 		return users.waiting().length > 1;
 	};
 
-	users.hasnext = function(){
+	users.current.clear = function(){
+		users.current.id();
+		users.current.name();
+		users.current.score();
+		users.current.lastname();
+		users.current.rut();
+	};
+
+	users.isempty = function(){
 		return users.waiting().length == 0;	
 	};
 
@@ -65,13 +64,14 @@ $(function () {
 			method: "DELETE"
 		}).done(function(data) {
 			$("#add-user-form")[0].reset();
+			users.current.clear();
 			users.fetchAll();
 		});
 	};
 
 	users.fetchAll = function(){
 		// Cargamos sólo los que están a la espera
-    	$.getJSON("/usuarios?json=true&unscored=true", function(data) {
+    	$.getJSON("/usuarios?json=true&scope", function(data) {
     		//console.log(data);
     		if(data.status == "OK" && data.data != null){
     			// El primero sería también current
@@ -88,6 +88,7 @@ $(function () {
 
     				users.next.id(data.data[1].id);
     				users.next.name(data.data[1].name);
+    				users.next.lastname(data.data[1].lastname);
     			}
 
     		} else {
@@ -97,21 +98,36 @@ $(function () {
 	}
 
 
+
+    /* Long pooling  */
+	function poll(){
+	    $.ajax({ url: "/usuarios/next?json=true", success: function(data){
+	    	console.log(data);
+	    	if(data.status == "OK" && data.data != null){
+	    	console.log("CUR:" + data.data[0].id + " PREV:" + users.current.id() + " NSCORE:" + data.data[0].score);
+	    		if(data.data[0].id != users.current.id()){
+	    			// recargar lista de usuarios
+	        		users.fetchAll();
+	    		} else {
+	    			users.current.score(data.data[0].score);
+	    		}
+
+	    	}
+
+	    }, dataType: "json", complete: poll, timeout: 3000 });
+	}
+
+
     /* Knockout fetch */
     ko.applyBindings(users);
     users.fetchAll();
+	// activar long-pooling
+	poll();
+
 
 
 });
+    
 
 //global scope
-function removeuser(id){
-		//var id = $(this).data("id");
-		$.ajax({
-			url: "/entries/" + id,
-			method: "DELETE"
-		}).done(function(data) {
-			$( "#table-entries" ).html(data);
-		});
-	}
 
