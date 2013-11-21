@@ -91,7 +91,7 @@ def logout():
 @app.route('/puntajes')
 def scoreboard():
     db = get_db()
-    cur = db.execute('select id, name, lastname, rut, email, score from entries where played = 1 order by score desc')
+    cur = db.execute('select id, name, lastname, rut, email, score, played from entries where played = 1 order by score desc')
     entries = cur.fetchall()
     return render_template('scoreboard.html', data=entries)
 
@@ -110,9 +110,9 @@ def privatize_filter(s):
 @app.route('/usuarios/top', methods=['GET'])
 def api_users_top():
     db = get_db()
-    cur = db.execute('select id, name, lastname, score, photo, rut, email from entries where played = 1 order by score desc limit 10')
+    cur = db.execute('select id, name, lastname, score, photo, rut, email, played from entries where played = 1 order by score desc limit 10')
     entries = cur.fetchall()
-    return multi_output(request, entries, "user.xml")
+    return multi_output(request, entries, "users.xml")
     
 
 """

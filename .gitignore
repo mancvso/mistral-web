@@ -1,3 +1,6 @@
+# Created by http://gitignore.io
+
+### Python ###
 *.py[cod]
 
 # C extensions
@@ -34,3 +37,21 @@ nosetests.xml
 .mr.developer.cfg
 .project
 .pydevproject
+
+# Rope
+.ropeproject
+
+
+### VirtualEnv ###
+# Virtualenv
+# http://iamzed.com/2009/05/07/a-primer-on-virtualenv/
+venv
+.Python
+[Bb]in
+[Ii]nclude
+[Ll]ib
+[Ss]cripts
+
+### SublimeText ###
+# SublimeText project files
+*.sublime-workspace
