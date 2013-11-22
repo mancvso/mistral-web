@@ -7,5 +7,6 @@
 --   email text not null,
 --   photo text not null default "",
 --   score integer not null default 0,
---   played boolean not null default 0
+--   played boolean not null default 0,
+--   called boolean not null default 0
 -- );

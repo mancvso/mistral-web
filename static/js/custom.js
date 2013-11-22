@@ -1,6 +1,4 @@
 $(function () {
-	
-	//$(".remove-user-trigger").click(remove-user );
 
 
 	$("#add-user-form").submit(function(e){
@@ -25,7 +23,8 @@ $(function () {
 		    name: ko.observable(),
 		    score: ko.observable(),
 		    lastname: ko.observable(),
-		    rut: ko.observable()
+		    rut: ko.observable(),
+		    called: ko.observable()
 		},
 		next: {
 			id: ko.observable(),
@@ -52,6 +51,7 @@ $(function () {
 		users.current.score();
 		users.current.lastname();
 		users.current.rut();
+		users.current.called();
 	};
 
 	users.isempty = function(){
@@ -60,7 +60,7 @@ $(function () {
 
 	users.removeUser = function(user){
 		$.ajax({
-			url: "/usuarios/" + user.id + "?json=true",
+			url: "/usuarios/" + user.id + "?json=true&permament=true",
 			method: "DELETE"
 		}).done(function(data) {
 			$("#add-user-form")[0].reset();
@@ -80,11 +80,12 @@ $(function () {
     			users.current.score(data.data[0].score);
     			users.current.lastname(data.data[0].lastname);
     			users.current.rut(data.data[0].rut);
+    			users.current.called(data.data[0].called);
     			// Next
     			users.waiting(data.data);
 
     			if(users.hasnext() == true){
-    				console.log(data.data[1]);
+    				//console.log(data.data[1]);
 
     				users.next.id(data.data[1].id);
     				users.next.name(data.data[1].name);
@@ -102,9 +103,9 @@ $(function () {
     /* Long pooling  */
 	function poll(){
 	    $.ajax({ url: "/usuarios/next?json=true", success: function(data){
-	    	console.log(data);
+	    	//console.log(data);
 	    	if(data.status == "OK" && data.data != null){
-	    	console.log("CUR:" + data.data[0].id + " PREV:" + users.current.id() + " NSCORE:" + data.data[0].score);
+	    	//console.log("CUR:" + data.data[0].id + " PREV:" + users.current.id() + " NSCORE:" + data.data[0].score);
 	    		if(data.data[0].id != users.current.id()){
 	    			// recargar lista de usuarios
 	        		users.fetchAll();
@@ -122,7 +123,7 @@ $(function () {
     ko.applyBindings(users);
     users.fetchAll();
 	// activar long-pooling
-	poll();
+	//poll();
 
 
 

@@ -110,7 +110,7 @@ def privatize_filter(s):
 @app.route('/usuarios/top', methods=['GET'])
 def api_users_top():
     db = get_db()
-    cur = db.execute('select id, name, lastname, score, photo, rut, email, played from entries where played = 1 order by score desc limit 10')
+    cur = db.execute('select id, name, lastname, score, photo, rut, email, played from entries where played = 1 order by score desc')
     entries = cur.fetchall()
     return multi_output(request, entries, "users.xml")
     
@@ -121,7 +121,7 @@ def api_users_top():
 @app.route('/usuarios/next')
 def api_users_next():
     db = get_db()
-    cur = db.execute('select id, name, lastname, rut, email, score, played from entries where played = 0 order by id asc limit 1')
+    cur = db.execute('select id, name, lastname, rut, called, email, score, played from entries where played = 0 order by id asc limit 1')
     entry = cur.fetchall()
     return multi_output(request, entry, "user.xml")
 
@@ -146,7 +146,7 @@ def api_users_update(id):
 
     else : #GET
         
-        cursor = db.execute('select id, name, lastname, rut, email, score from entries where id = ?', [id])
+        cursor = db.execute('select id, name, called, lastname, rut, email, score from entries where id = ?', [id])
         entry = cursor.fetchall()
         return multi_output(request, entry, "user.xml")
 
@@ -157,9 +157,9 @@ def api_users_update(id):
 def api_users():
     db = get_db()
     if request.args.has_key('scope'):
-        sql ='select id, name, lastname, rut, email, score, played from entries where played = 0 order by score desc'
+        sql ='select id, name, lastname, called, rut, email, score, played from entries where played = 0 order by score desc'
     else :
-        sql ='select id, name, lastname, rut, email, score, played from entries order by score desc'
+        sql ='select id, name, lastname, rut, called, email, score, played from entries order by score desc'
 
     cur = db.execute( sql )
     entries = cur.fetchall()
@@ -180,10 +180,18 @@ def remove_entry(id):
     #if not session.get('logged_in'):
     #    abort(401)
     db = get_db()
-    cursor = db.execute('select id, name, lastname, rut, email, score from entries where id = ?', [id])
+    cursor = db.execute('select id, name, called, lastname, rut, email, score from entries where id = ?', [id])
     entry = cursor.fetchall()
+    
+
     db.execute('delete from entries where id = ?', [id])
-    db.commit()
+    if request.args.has_key("permament"):
+        db.commit()
+    else:
+        db.execute('insert into entries (name, lastname, rut, email, called) values (?, ?, ?, ?, ?)',
+                 [entry[0]['name'], entry[0]['lastname'], entry[0]['rut'], entry[0]['email'], True])
+        db.commit()
+
     return multi_output(request, entry, "user.xml")
 
 
@@ -212,6 +220,6 @@ def multi_output(request, data, xml_template):
 if __name__ == '__main__':
     reload(sys)
     sys.setdefaultencoding('utf-8')
-    init_db()
 
+    init_db()
     app.run(host='0.0.0.0')

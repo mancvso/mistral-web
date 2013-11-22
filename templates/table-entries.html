@@ -18,11 +18,20 @@
       </tr>
     </thead>
     <tbody data-bind="foreach: waiting">
-      <tr id="">
-        <td><span data-bind="text: name"></span> <span data-bind="text: lastname"></span></td>
+      <tr>
+        <td>
+          <code>#<span data-bind="text: id"></span></code>&nbsp;
+          <span data-bind="text: name"></span>&nbsp;
+          <span data-bind="text: lastname"></span>&nbsp;
+          <span data-bind="if: called == true"> <span class="badge">Rezagado</span> </span>
+        </td>
         <td data-bind="text:rut"></td>
         <td data-bind="text:email"></td>
-        <td data-bind="click:$parent.removeUser">Borrar</td>
+        <td>
+          <span data-bind="visible: $index">
+            <button class="btn btn-warning" data-bind="click:$parent.removeUser">Borrar</button>
+          </span>
+        </td>
       </tr>
     </tbody>
   </table>

@@ -20,11 +20,11 @@
             </dl>
           </div>
           <div class="col-xs-6">
-            <dl>
+            <dl data-bind="visible: current.score >= 0">
               <dt>Puntaje</dt>
               <dd data-bind="text: current.score"></dd>
-              </dl>
-            </div>
+            </dl>
+          </div>
         </div>
         <div>
           <small class="text-muted" data-bind="if: hasnext() == true">Siguiente jugador: <span data-bind="text: next.fullname"></span></small> <br>
