@@ -3,7 +3,7 @@
 	{% if session.logged_in %}
 	    {% if data %}
 	    	<div class="table-responsive">
-		        <table class="table">
+		        <table id="tabla-puntajes" class="table">
 		          <thead>
 		            <tr>
 		              <th>Posición</th>
@@ -34,4 +34,24 @@
 		{% endif %}
 		<!-- layout ya entrega un mensaje de no autorizado -->
 	{% endif %}
+{% endblock %}
+
+{% block extra_scripts %}
+<script type="text/javascript" src="{{ url_for('static', filename='js/jquery.dataTables.min.js') }}"></script>
+<script type="text/javascript">
+$(document).ready(function(){
+	$("#tabla-puntajes").dataTable({
+	    "iDisplayLength": 25
+	});
+});
+</script>
+{% endblock %}
+
+{% block extra_styles %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/jquery.dataTables.css') }}"></link>
+<style type="text/css">
+#tabla-puntajes_length {
+	display: none;
+}
+</style>
 {% endblock %}
